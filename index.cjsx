@@ -123,13 +123,13 @@ getBonusType = (lv) ->
     4
 
 module.exports =
-  name: 'ExpCalcView'
-  priority: 2
-  displayName: <span><FontAwesome key={0} name='calculator' />{' ' + __("Exp calc")}</span>
-  description: __("Exp calculator")
-  author: 'Chiba'
-  link: 'https://github.com/Chibaheit'
-  version: '1.2.2'
+  name: 'maruyuCounter'
+  priority: 222222
+  displayName: <span><FontAwesome key={0} name='calculator' />{' ' + __("Maruyu Counter")}</span>
+  description: __("Maruyu Counter")
+  author: 'fork'
+  link: 'https://github.com/JenningsWu/plugin-exp-calculator'
+  version: '0.1.0'
   reactClass: React.createClass
     getInitialState: ->
       lastShipId: 0
