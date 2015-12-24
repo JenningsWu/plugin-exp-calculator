@@ -1,7 +1,7 @@
 {
-  "name": "poi-plugin-exp-calc",
-  "description": "Calculate experience value.",
-  "version": "1.2.2",
+  "name": "poi-plugin-maruyu-counter",
+  "description": "Maruyu counter.",
+  "version": "0.1.0",
   "main": "index.cjsx",
   "dependencies": {
   },
@@ -11,12 +11,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/poooi/plugin-exp-calculator.git"
+    "url": "git+https://github.com/jenningswu/plugin-exp-calculator.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/poooi/plugin-exp-calculator/issues"
+    "url": "https://github.com/jenningswu/plugin-exp-calculator/issues"
   },
-  "homepage": "https://github.com/poooi/plugin-exp-calculator#readme"
+  "homepage": "https://github.com/jenningswu/plugin-exp-calculator#readme"
 }
