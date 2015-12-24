@@ -15,15 +15,13 @@ window.i18n.expCalc.setLocale(window.language)
 __ = window.i18n.expCalc.__.bind(window.i18n.expCalc)
 
 row = if layout == 'horizontal' then 6 else 3
-shipRow = if layout == 'horizontal' then 12 else 5
-mapRow = if layout == 'horizontal' then 9 else 5
+mapRow = if layout == 'horizontal' then 9 else 4
 rankRow = if layout == 'horizontal' then 3 else 2
 
 window.addEventListener 'layout.change', (e) ->
   {layout} = e.detail
   row = if layout == 'horizontal' then 6 else 3
-  shipRow = if layout == 'horizontal' then 12 else 5
-  mapRow = if layout == 'horizontal' then 9 else 5
+  mapRow = if layout == 'horizontal' then 9 else 4
   rankRow = if layout == 'horizontal' then 3 else 2
 
 exp = [
@@ -100,28 +98,6 @@ getExpInfo = (shipId) ->
         break
   return [_ships[idx].api_lv, _ships[idx].api_exp[1], goalLevel]
 
-bonusExpScaleFlagship = [
-  [5, 8, 11, 15, 20],
-  [10, 13, 16, 20, 25]
-]
-
-bonusExpScaleNonFlagship = [
-  [3, 5, 7, 10, 15],
-  [4, 6, 8, 12, 17.5]
-]
-
-getBonusType = (lv) ->
-  if lv < 10
-    0
-  else if 10 <= lv < 30
-    1
-  else if 30 <= lv < 60
-    2
-  else if 60 <= lv < 100
-    3
-  else
-    4
-
 module.exports =
   name: 'maruyuCounter'
   priority: 222222
@@ -132,110 +108,58 @@ module.exports =
   version: '0.1.0'
   reactClass: React.createClass
     getInitialState: ->
-      lastShipId: 0
-      _ships: null
-      currentLevel: 1
+      _ships: []
       nextExp: 100
-      goalLevel: 99
-      mapValue: 30
+      goalLevel: 20
+      mapValue: 320
       mapPercent: 1.2
-      totalExp: 1000000
+      totalExp: 0
       expSecond: [
-        Math.ceil(1000000 / 30 / 1.2),
-        Math.ceil(1000000 / 30 / 1.2 / 1.5),
-        Math.ceil(1000000 / 30 / 1.2 / 2.0),
-        Math.ceil(1000000 / 30 / 1.2 / 3.0)
+        Math.ceil(0 / 320 / 1.2),
+        Math.ceil(0 / 320 / 1.2 / 1.5),
+        Math.ceil(0 / 320 / 1.2 / 2.0),
+        Math.ceil(0 / 320 / 1.2 / 3.0)
       ]
       perExp: [
-        30 * 1.2,
-        30 * 1.2 * 1.5,
-        30 * 1.2 * 2.0,
-        30 * 1.2 * 3.0
+        320 * 1.2,
+        320 * 1.2 * 1.5,
+        320 * 1.2 * 2.0,
+        320 * 1.2 * 3.0
       ]
-    handleExpChange: (_currentLevel, _nextExp, _goalLevel, _mapValue, _mapPercent) ->
-      _currentLevel = parseInt(_currentLevel)
-      _nextExp = parseInt(_nextExp)
+    handleExpChange: (ships, _goalLevel, _mapValue, _mapPercent) ->
       _goalLevel = parseInt(_goalLevel)
       _mapValue = parseInt(_mapValue)
       _totalExp = 0
-      _totalExp = exp[_goalLevel] - exp[_currentLevel + 1] + _nextExp
+      for ship in ships
+        _totalExp += exp[_goalLevel] - ship.api_exp[0]
       _noneType = Math.ceil(_totalExp / _mapValue / _mapPercent)
       _secType = Math.ceil(_totalExp / _mapValue / _mapPercent / 1.5)
       _mvpType = Math.ceil(_totalExp / _mapValue / _mapPercent / 2.0)
       _bothType = Math.ceil(_totalExp / _mapValue / _mapPercent / 3.0)
       @setState
-        currentLevel: _currentLevel
-        nextExp: _nextExp
         goalLevel: _goalLevel
         mapValue: _mapValue
         mapPercent: _mapPercent
         totalExp: _totalExp
         expSecond: [_noneType, _secType, _mvpType, _bothType]
         perExp: [_mapValue * _mapPercent, _mapValue * _mapPercent * 1.5, _mapValue * _mapPercent * 2.0, _mapValue * _mapPercent * 3.0]
-    handleShipChange: (e) ->
-      {$ships} = window
-      {_ships} = @state
-      if e && e.target.value != @state.lastShipId
-        @state.lastShipId = e.target.value
-      [_currentLevel, _nextExp, _goalLevel] = getExpInfo @state.lastShipId
-      @handleExpChange _currentLevel, _nextExp, _goalLevel, @state.mapValue, @state.mapPercent
     handleCurrentLevelChange: (e) ->
-      @handleExpChange e.target.value, @state.nextExp, @state.goalLevel, @state.mapValue, @state.mapPercent
-    handleNextExpChange: (e) ->
-      @handleExpChange @state.currentLevel, e.target.value, @state.goalLevel, @state.mapValue, @state.mapPercent
+      @handleExpChange @state._ships, @state.goalLevel, @state.mapValue, @state.mapPercent
     handleGoalLevelChange: (e) ->
-      @handleExpChange @state.currentLevel, @state.nextExp, e.target.value, @state.mapValue, @state.mapPercent
+      @handleExpChange @state._ships, e.target.value, @state.mapValue, @state.mapPercent
     handleExpMapChange: (e) ->
-      @handleExpChange @state.currentLevel, @state.nextExp, @state.goalLevel, e.target.value, @state.mapPercent
+      @handleExpChange @state._ships, @state.goalLevel, e.target.value, @state.mapPercent
     handleExpLevelChange: (e) ->
-      @handleExpChange @state.currentLevel, @state.nextExp, @state.goalLevel, @state.mapValue, e.target.value
+      @handleExpChange @state._ships, @state.goalLevel, @state.mapValue, e.target.value
     handleResponse: (e) ->
       {method, path, body, postBody} = e.detail
       switch path
         when '/kcsapi/api_port/port'
           ships = Object.keys(window._ships).map (key) ->
             window._ships[key]
-          @setState
-            _ships: _.sortBy ships, (e) ->
-              -e.api_lv
-          @handleShipChange()
-        when '/kcsapi/api_req_member/get_practice_enemyinfo'
-          enemyShips = body.api_deck.api_ships
-          baseExp = exp[enemyShips[0].api_level] / 100 + exp[enemyShips[1].api_level ? 0] / 300
-          baseExp = if baseExp <= 500 then baseExp else 500 + Math.floor Math.sqrt baseExp - 500
-          bonusScale = ["0%", "0%", "0%", "0%"]
-          bonusFlag = false
-          for index in [0..3]
-            fleetShips = window._decks[index].api_ship
-            flagshipFlag = false
-            trainingCount = 0
-            trainingLv = 0
-            for id, i in fleetShips
-              if id is -1
-                break
-              ship = window._ships[id]
-              if ship.api_stype is 21
-                trainingCount++
-                if not flagshipFlag
-                  if ship.api_lv > trainingLv
-                    trainingLv = ship.api_lv
-                if i is 0
-                  flagshipFlag = true
-            if trainingCount > 2
-              trainingCount = 2
-            if trainingCount isnt 0
-              bonusFlag = true
-              bonusType = getBonusType trainingLv
-              if flagshipFlag
-                bonusScale[index] = bonusExpScaleFlagship[trainingCount - 1][bonusType]
-              else
-                bonusScale[index] = bonusExpScaleNonFlagship[trainingCount - 1][bonusType]
-              bonusScale[index] = "#{bonusScale[index]}%"
-            message = "#{__('Exp')}: [A/B] #{Math.floor baseExp}, [S] #{Math.floor baseExp * 1.2}"
-            if bonusFlag
-              message = "#{message}, #{__("+ %s for each fleet", bonusScale.join " / ")}"
-          window.success message,
-            stickyFor: 1000
+          ships = ships.filter (e)->
+            e.api_ship_id is 163 and e.api_lv < 20
+          @handleExpChange ships, @state.goalLevel, @state.mapValue, @state.mapPercent
     componentDidMount: ->
       window.addEventListener 'game.response', @handleResponse
     componentWillUnmount: ->
@@ -243,22 +167,9 @@ module.exports =
     render: ->
       <div>
         <link rel="stylesheet" href={join(relative(ROOT, __dirname), 'assets', 'exp-calc.css')} />
-        <Grid>
-          <Col xs={shipRow}>
-            <Input type="select" label={__("Ship")} value={@state.lastShipId} onChange={@handleShipChange}>
-              <option key={0}>{__("NULL")}</option>
-              {
-                {$ships} = window
-                if @state._ships
-                  for ship, i in @state._ships
-                    continue unless ship?
-                    shipInfo = $ships[ship.api_ship_id]
-                    <option key={i + 1} value={ship.api_id}>Lv. {ship.api_lv} - {window.i18n.resources.__ shipInfo.api_name}</option>
-              }
-            </Input>
-          </Col>
+        <Grid style={paddingTop: 20}>
           <Col xs={mapRow}>
-            <Input type="select" label={__("Map")} onChange={@handleExpMapChange}>
+            <Input type="select" label={__("Map")} onChange={@handleExpMapChange} value={@state.mapValue}>
             {
               for x, i in expMap
                 <option key={i} value={expValue[i]}>{x}</option>
@@ -272,12 +183,6 @@ module.exports =
                 <option key={i} value={expPercent[i]}>{x}</option>
             }
             </Input>
-          </Col>
-          <Col xs={row}>
-            <Input type="number" label={__("Actual level")} value={@state.currentLevel} onChange={@handleCurrentLevelChange} />
-          </Col>
-          <Col xs={row}>
-            <Input type="number" label={__("To next")} value={@state.nextExp} onChange={@handleNextExpChange} />
           </Col>
           <Col xs={row}>
             <Input type="number" label={__("Goal")} value={@state.goalLevel} onChange={@handleGoalLevelChange} />
