@@ -1,8 +1,5 @@
-# plugin-exp-calculator
-Calculate experience value.
+# plugin-maruyu-counter
 
-exp calculator for poi
-##v1.0.0
-init
-##v1.1.0
-add i18n support
+肝呀肝呀肝马路鱼~
+
+还需要多少场才能把马路鱼全养到20级呢~
